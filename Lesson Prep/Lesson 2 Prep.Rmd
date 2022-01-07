@@ -1,0 +1,208 @@
+---
+title: "Lesson 2 Prep"
+author: "Samantha Chinn"
+date: "1/6/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(faraway)
+```
+
+```{r}
+gavote
+```
+
+```{r}
+str(gavote)
+```
+
+```{r}
+summary(gavote)
+```
+
+Create new variable undercount:
+```{r}
+gavote$undercount <- (gavote$ballots-gavote$votes) / gavote$ballots
+summary(gavote$undercount)
+```
+
+Overall relative undercount:
+with command removes the necessity for gavote$ every time
+```{r}
+with(gavote, sum(ballots-votes)/sum(ballots))
+```
+
+Histograms:
+```{r}
+hist(gavote$undercount, main="Undercount", xlab="Percent Undercount")
+```
+
+```{r}
+plot(density(gavote$undercount),main="Undercount")
+rug(gavote$undercount)
+```
+
+```{r}
+pie(table(gavote$equip),col=gray(0:4/4))
+```
+
+Pareto Chart - bar plot with categoreis in descending order of frequency.
+```{r}
+barplot(sort(table(gavote$equip), decreasing=TRUE), las=2)
+```
+
+```{r}
+gavote$pergore <- gavote$gore/gavote$votes
+plot(pergore ~ perAA, gavote, xlab="Proportion African American", ylab="Proportion for Gore")
+```
+
+Side-by-side boxplots:
+```{r}
+plot(undercount ~ equip, gavote, xlab="", las=3)
+```
+
+```{r}
+xtabs(~ atlanta + rural, gavote)
+```
+
+```{r}
+names(gavote)
+```
+
+```{r}
+names(gavote)[4] <- "usage"
+```
+
+```{r}
+nix <- c(3,10,11,12)
+cor(gavote[,nix])
+```
+
+Fitting a Linear Model:
+```{r}
+lmod <- lm(undercount ~ pergore + perAA, gavote)
+```
+
+```{r}
+coef(lmod)
+```
+
+```{r}
+predict(lmod)
+```
+
+```{r}
+residuals(lmod)
+```
+
+```{r}
+deviance(lmod)
+```
+
+```{r}
+df.residual(lmod)
+```
+
+```{r}
+nrow(gavote)-length(coef(lmod))
+```
+
+```{r}
+sqrt(deviance(lmod)/df.residual(lmod))
+```
+
+```{r}
+lmodsum <- summary(lmod)
+lmodsum$sigma
+```
+
+```{r}
+lmodsum$r.squared
+```
+
+```{r}
+cor(predict(lmod),gavote$undercount)^2
+```
+
+```{r}
+lmodsum$adj.r.squared
+```
+
+```{r}
+summary(lmod)
+```
+
+```{r}
+library(faraway)
+sumary(lmod)
+```
+
+Interpretation:
+```{r}
+gavote$cpergore <- gavote$pergore - mean(gavote$pergore)
+gavote$cperAA <- gavote$perAA - mean(gavote$perAA)
+lmodi <- lm(undercount ~ cperAA+cpergore*usage+equip, gavote)
+sumary(lmodi)
+```
+
+Hypothesis Testing:
+```{r}
+anova(lmod,lmodi)
+```
+
+Comparison of all models with one predictor less than the larger model:
+```{r}
+drop1(lmodi,test="F")
+```
+
+Confidence Intervals:
+```{r}
+confint(lmodi)
+```
+
+Diagnostics:
+```{r}
+plot(lmodi)
+```
+
+```{r}
+gavote[cooks.distance(lmod) > 0.1,]
+```
+
+Half-normal plot:
+```{r}
+halfnorm(hatvalues(lmodi))
+```
+
+```{r}
+gavote[hatvalues(lmodi)>0.3,]
+```
+
+```{r}
+termplot(lmodi,partial=TRUE,terms=1)
+```
+
+Robust Regression:
+```{r}
+library(MASS)
+rlmodi <- rlm(undercount ~ cperAA+cpergore*usage+equip, gavote)
+summary(rlmodi)
+```
+
+Weight:
+```{r}
+wlmodi <- lm(undercount ~ cperAA+cpergore*usage+equip, gavote, weights=ballots)
+```
+
+Transformation:
+```{r}
+plmodi <- lm(undercount ~ poly(cperAA,4)+cpergore*usage+equip,gavote)
+summary(plmodi)
+```
+
+```{r}
+termplot(plmodi, partial=TRUE,terms=1)
+```
+
