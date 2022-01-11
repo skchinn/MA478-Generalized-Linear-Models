@@ -77,6 +77,7 @@ hist(rstandard(lmod_new))
 ## still have the right skew
 plot(lmod_new)
 
+
 # Look at predicted values y-hat
 qplot(predict(lmod_new), gala$Species)+
   geom_abline(slope = 1, color = "red")
